@@ -1,1 +1,66 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*$py.class
+*.so
 
+# Virtual environments
+.venv/
+venv/
+env/
+.env/
+ENV/
+
+# Distribution / packaging
+dist/
+build/
+*.egg-info/
+*.egg
+.eggs/
+
+# Model checkpoints and serialised artefacts
+models/
+*.pkl
+*.pickle
+*.joblib
+
+# Data files
+data/
+*.csv
+*.parquet
+*.feather
+*.h5
+*.hdf5
+*.npy
+*.npz
+
+# Logs
+logs/
+*.log
+
+# Jupyter notebooks checkpoints
+.ipynb_checkpoints/
+
+# IDE / editor
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# pytest / coverage
+.pytest_cache/
+.coverage
+coverage.xml
+htmlcov/

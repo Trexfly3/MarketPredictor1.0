@@ -212,8 +212,10 @@ class TechnicalIndicatorEngine:
         indicators["low"] = low
         indicators["close"] = close
         indicators["volume"] = frame["volume"]
-        indicators["ema_20"] = close.ewm(span=self.ema_fast, adjust=False, min_periods=1).mean()
-        indicators["ema_50"] = close.ewm(span=self.ema_slow, adjust=False, min_periods=1).mean()
+        ema_20 = close.ewm(span=self.ema_fast, adjust=False, min_periods=1).mean()
+        ema_50 = close.ewm(span=self.ema_slow, adjust=False, min_periods=1).mean()
+        indicators["ema_20"] = ema_20
+        indicators["ema_50"] = ema_50
 
         delta = close.diff()
         upward = delta.clip(lower=0.0)
@@ -228,8 +230,23 @@ class TechnicalIndicatorEngine:
             [(high - low), (high - previous_close).abs(), (low - previous_close).abs()],
             axis=1,
         ).max(axis=1)
-        indicators["atr_14"] = true_range.ewm(alpha=1 / self.atr_period, adjust=False, min_periods=1).mean()
+        atr_14 = true_range.ewm(alpha=1 / self.atr_period, adjust=False, min_periods=1).mean()
+        indicators["atr_14"] = atr_14
         indicators["return_1"] = close.pct_change()
+
+        # --- Normalized / relative features (computed before the 1-period shift) ---
+        safe_close = close.replace(0.0, np.nan)
+        indicators["return_3"] = close.pct_change(3)
+        indicators["return_5"] = close.pct_change(5)
+        indicators["return_10"] = close.pct_change(10)
+        indicators["return_20"] = close.pct_change(20)
+        indicators["rolling_vol_20"] = close.pct_change().rolling(20, min_periods=2).std()
+        indicators["close_to_ema20"] = close / ema_20.replace(0.0, np.nan) - 1.0
+        indicators["close_to_ema50"] = close / ema_50.replace(0.0, np.nan) - 1.0
+        indicators["atr_pct"] = atr_14 / safe_close
+        vol_mean = frame["volume"].rolling(20, min_periods=2).mean()
+        vol_std = frame["volume"].rolling(20, min_periods=2).std()
+        indicators["volume_zscore"] = (frame["volume"] - vol_mean) / vol_std.replace(0.0, np.nan)
 
         unshifted_market_columns = ["open", "high", "low", "close", "volume"]
         feature_columns = indicators.columns.difference(unshifted_market_columns)

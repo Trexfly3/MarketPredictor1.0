@@ -1,11 +1,19 @@
 system:
   data_ingestion_lookback_limit: 200
   target_variable_horizon_periods: 1
+
+target:
+  # Minimum future return required to label a bar as bullish (class 1).
+  # Set to 0.0 for simple price-direction labelling.
+  # Set to e.g. 0.002 to require a 0.2% move before labelling bullish.
+  positive_return_threshold: 0.0
+
 backtest:
   initial_cash_balance: 100000.0
   slippage_spread_percentage_minimum: 0.0001
   slippage_spread_percentage_maximum: 0.0005
   execution_fee_scalar: 0.0010
+
 model:
   learning_rate: 0.01
   n_estimators: 100
