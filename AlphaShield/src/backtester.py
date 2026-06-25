@@ -48,7 +48,7 @@ class OrderExecutionSimulator:
         executed_price = price * (1 + slippage) if side == "BUY" else price * (1 - slippage)
         gross_value = executed_price * shares
         fee = gross_value * self.fee_scalar
-        return ExecutionResult(side, float(price), float(executed_price), float(shares), float(gross_value), float(fee), timestamp or pd.Timestamp.utcnow())
+        return ExecutionResult(side, float(price), float(executed_price), float(shares), float(gross_value), float(fee), timestamp or pd.Timestamp.now("UTC"))
 
 
 class PortfolioTracker:
@@ -144,8 +144,38 @@ class PerformanceAnalyticsEngine:
         drawdown = (running_peak - values) / running_peak
         return float(drawdown.max())
 
+    @staticmethod
+    def total_return(equity_curve: pd.DataFrame) -> float:
+        """Total percentage return from the first to the last equity curve point."""
+        if "portfolio_value" not in equity_curve.columns or len(equity_curve) < 2:
+            return 0.0
+        values = equity_curve["portfolio_value"].astype(float)
+        first = values.iloc[0]
+        if first == 0:
+            return 0.0
+        return float((values.iloc[-1] - first) / first)
+
+    @staticmethod
+    def profit_factor(equity_curve: pd.DataFrame) -> float:
+        """Ratio of summed period gains to summed period losses (>1.0 is profitable).
+
+        Computed from period-over-period returns in the equity curve.
+        Returns ``0.0`` when there are no losing periods and no gains, or
+        ``inf`` when all periods are profitable with no losses.
+        """
+        if "portfolio_value" not in equity_curve.columns or len(equity_curve) < 2:
+            return 0.0
+        returns = equity_curve["portfolio_value"].astype(float).pct_change().dropna()
+        gross_gains = float(returns[returns > 0].sum())
+        gross_losses = float(abs(returns[returns < 0].sum()))
+        if gross_losses == 0:
+            return float("inf") if gross_gains > 0 else 0.0
+        return float(gross_gains / gross_losses)
+
     def summarize(self, equity_curve: pd.DataFrame) -> Dict[str, float]:
         return {
             "annualized_sharpe_ratio": self.annualized_sharpe_ratio(equity_curve),
             "maximum_drawdown": self.maximum_drawdown(equity_curve),
+            "total_return": self.total_return(equity_curve),
+            "profit_factor": self.profit_factor(equity_curve),
         }
