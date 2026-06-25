@@ -1,0 +1,13 @@
+system:
+  data_ingestion_lookback_limit: 200
+  target_variable_horizon_periods: 1
+backtest:
+  initial_cash_balance: 100000.0
+  slippage_spread_percentage_minimum: 0.0001
+  slippage_spread_percentage_maximum: 0.0005
+  execution_fee_scalar: 0.0010
+model:
+  learning_rate: 0.01
+  n_estimators: 100
+  max_depth: 5
+  subsample: 0.8
