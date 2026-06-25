@@ -221,7 +221,8 @@ class TechnicalIndicatorEngine:
         average_gain = upward.ewm(alpha=1 / self.rsi_period, adjust=False, min_periods=1).mean()
         average_loss = downward.ewm(alpha=1 / self.rsi_period, adjust=False, min_periods=1).mean()
         rs = average_gain.div(average_loss.replace(0.0, np.nan))
-        indicators["rsi_14"] = (100.0 - (100.0 / (1.0 + rs))).fillna(np.where(average_gain > 0.0, 100.0, 50.0))
+        neutral_rsi = pd.Series(np.where(average_gain > 0.0, 100.0, 50.0), index=frame.index)
+        indicators["rsi_14"] = (100.0 - (100.0 / (1.0 + rs))).fillna(neutral_rsi)
 
         true_range = pd.concat(
             [(high - low), (high - previous_close).abs(), (low - previous_close).abs()],
